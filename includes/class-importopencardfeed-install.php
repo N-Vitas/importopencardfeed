@@ -70,28 +70,6 @@ class Importopencardfeed_Install {
 		dbDelta( $scheme );
 	}
 
-	public static function install_data() {
-		global $wpdb;
-		/*
-		 * Частота обновления
-		 * hourly - ежечасно;
-		 * twicedaily - дважды в день;
-		 * daily - ежедневно.
-		*/
-		$table_name = $wpdb->prefix . 'importopencardfeed_settings';
-		// Готово, теперь используем функции класса wpdb
-		$wpdb->replace( 
-			$table_name, 
-			array( 
-				'id'      => 1,
-				"name" => "Настройки синхронизации", 
-				"crontime" => "hourly", 
-				"run" => 0, 
-				"url" => "http://localhost/", 
-			) 
-		);
-	}
-
 	public static function drop_tables() {
 		global $wpdb;
 

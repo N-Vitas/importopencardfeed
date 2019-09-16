@@ -14,7 +14,7 @@ foreach ( $cron_zadachi as $timestamp => $cronhooks ) {
     $results[] = $cronhooks;
 }
 
-var_dump(is_singular('importopencardfeed-admin'));
+// var_dump(wp_next_scheduled( 'importopencardfeed_hook' ));die;
 ?>
 <div class="wrap">
 <h1><?php echo $setting->name ?></h1>

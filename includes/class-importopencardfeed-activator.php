@@ -35,7 +35,8 @@ class Importopencardfeed_Activator {
 	
 	public static function install_importopencardfeed() {
 		require_once plugin_dir_path( __FILE__ ) . 'class-importopencardfeed-install.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-importopencardfeed-settings.php';
 		Importopencardfeed_Install::install();
-		Importopencardfeed_Install::install_data();
+		Importopencardfeed_Settings::install_settings();
 	}
 }

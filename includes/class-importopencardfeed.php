@@ -78,8 +78,27 @@ class Importopencardfeed {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+
+	}
+	public function init() {
+		add_filter( 'cron_schedules', array( __CLASS__, 'create_time_jobs' ) );
+		$this->create_cron_jobs();
 	}
 
+
+	private function create_cron_jobs() {
+		if (Importopencardfeed_Settings::is_run()) {
+			if (wp_next_scheduled( 'importopencardfeed_hook' ) ) {
+				// wp_clear_scheduled_hook( 'importopencardfeed_hook' );
+				wp_schedule_event( wp_next_scheduled( 'importopencardfeed_hook' ), Importopencardfeed_Settings::get_cron_time(), 'importopencardfeed_hook' );
+			} else {
+				wp_schedule_event( time(), Importopencardfeed_Settings::get_cron_time(), 'importopencardfeed_hook' );
+			}
+			add_action( 'importopencardfeed_hook', array( __CLASS__, 'importopencardfeed_product' ) );
+		} else {
+			wp_unschedule_event( 'woocommerce_scheduled_sales' );
+		}
+	}
 	/**
 	 * Load the required dependencies for this plugin.
 	 *
@@ -121,6 +140,8 @@ class Importopencardfeed {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-importopencardfeed-public.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-importopencardfeed-settings.php';
+
 		$this->loader = new Importopencardfeed_Loader();
 
 	}
@@ -141,7 +162,37 @@ class Importopencardfeed {
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
 	}
-
+	public function create_time_jobs( $schedules ) {
+		// $raspisanie - это массив, состоящий из всех зарегистрированных интервалов
+		// наша задача - добавить в него свой собственный интервал, к примеру пусть будет 3 минуты
+		$schedules['every_10_sec'] = array(
+			'interval' => 10, // в одной минуте 60 секунд, в трёх минутах - 180
+			'display' => 'Каждые 10 секунд' // отображаемое имя
+		);
+		return $schedules;
+	}
+	
+	public function importopencardfeed_product() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'importopencardfeed_products';
+		// Готово, теперь используем функции класса wpdb
+		$wpdb->insert( 
+			$table_name, 
+			array(  
+				'sku' => 'sdfgsfd',
+				'virtual' => 0,
+				'downloadable' => 0,
+				'min_price' => 3456,
+				'max_price' => 34563,
+				'onsale' => 0,
+				'stock_quantity' => NULL,
+				'stock_status' => 'instock',
+				'rating_count' => 0,
+				'average_rating' => 0.00,
+				'total_sales' => 0,	
+			)
+		);
+	}
 	/**
 	 * Register all of the hooks related to the admin area functionality
 	 * of the plugin.
@@ -155,7 +206,20 @@ class Importopencardfeed {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		// if (isset($post["run"])) {
+		// 	wp_schedule_single_event( time() + 60, 'query_import_hook' );
+		// 	if (!wp_next_scheduled( 'query_import_hook' ) ) {
+		// 		error_log( 'send_test_email_in_background:START' );
+		// 		wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
+		// 		error_log( 'send_test_email_in_background:END' );
+		// 	} else {
+		// 		wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
+		// 	}
+		// } else {
+		// 	wp_unschedule_event( wp_next_scheduled( 'query_import_hook' ), 'query_import_hook' );
+		// }
 
+		// add_action( 'query_import_hook', 'query_import' );
 	}
 
 	/**
@@ -181,6 +245,7 @@ class Importopencardfeed {
 	 */
 	public function run() {
 		$this->loader->run();
+		$this->init();
 		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			$this->postProcess($_POST);
 		}
@@ -210,41 +275,6 @@ class Importopencardfeed {
 			array( 'id' => 1 ),
 			array( '%s', '%d', '%s'),
 			array( '%d' )
-		);
-		if (isset($post["run"])) {
-			wp_schedule_single_event( time() + 60, 'query_import_hook' );
-			if (!wp_next_scheduled( 'query_import_hook' ) ) {
-				error_log( 'send_test_email_in_background:START' );
-				wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
-				error_log( 'send_test_email_in_background:END' );
-			} else {
-				wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
-			}
-		} else {
-			wp_unschedule_event( wp_next_scheduled( 'query_import_hook' ), 'query_import_hook' );
-		}
-		add_action( 'query_import_hook', 'query_import' );
-	}
-	function query_import() {
-		update_option('admin_email','nikonov.vitas@gmail.com'.time());
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'importopencardfeed_products';
-		// Готово, теперь используем функции класса wpdb
-		$wpdb->insert( 
-			$table_name, 
-			array(  
-				'sku' => 'sdfgsfd',
-				'virtual' => 0,
-				'downloadable' => 0,
-				'min_price' => 3456,
-				'max_price' => 34563,
-				'onsale' => 0,
-				'stock_quantity' => NULL,
-				'stock_status' => 'instock',
-				'rating_count' => 0,
-				'average_rating' => 0.00,
-				'total_sales' => 0,	
-			)
 		);
 	}
 
