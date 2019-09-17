@@ -78,25 +78,19 @@ class Importopencardfeed {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->init();
 
 	}
 	public function init() {
 		add_filter( 'cron_schedules', array( __CLASS__, 'create_time_jobs' ) );
-		$this->create_cron_jobs();
+		add_action( 'importopencardfeed_hook', array( __CLASS__, 'importopencardfeed_product' ) );
 	}
 
 
 	private function create_cron_jobs() {
+		wp_clear_scheduled_hook( 'importopencardfeed_hook' );
 		if (Importopencardfeed_Settings::is_run()) {
-			if (wp_next_scheduled( 'importopencardfeed_hook' ) ) {
-				// wp_clear_scheduled_hook( 'importopencardfeed_hook' );
-				wp_schedule_event( wp_next_scheduled( 'importopencardfeed_hook' ), Importopencardfeed_Settings::get_cron_time(), 'importopencardfeed_hook' );
-			} else {
-				wp_schedule_event( time(), Importopencardfeed_Settings::get_cron_time(), 'importopencardfeed_hook' );
-			}
-			add_action( 'importopencardfeed_hook', array( __CLASS__, 'importopencardfeed_product' ) );
-		} else {
-			wp_unschedule_event( 'woocommerce_scheduled_sales' );
+			wp_schedule_event( time(), Importopencardfeed_Settings::get_cron_time(), 'importopencardfeed_hook' );
 		}
 	}
 	/**
@@ -142,6 +136,8 @@ class Importopencardfeed {
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-importopencardfeed-settings.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-importopencardfeed-xml.php';
+
 		$this->loader = new Importopencardfeed_Loader();
 
 	}
@@ -156,7 +152,6 @@ class Importopencardfeed {
 	 * @access   private
 	 */
 	private function set_locale() {
-
 		$plugin_i18n = new Importopencardfeed_i18n();
 
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
@@ -172,26 +167,9 @@ class Importopencardfeed {
 		return $schedules;
 	}
 	
-	public function importopencardfeed_product() {
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'importopencardfeed_products';
-		// Готово, теперь используем функции класса wpdb
-		$wpdb->insert( 
-			$table_name, 
-			array(  
-				'sku' => 'sdfgsfd',
-				'virtual' => 0,
-				'downloadable' => 0,
-				'min_price' => 3456,
-				'max_price' => 34563,
-				'onsale' => 0,
-				'stock_quantity' => NULL,
-				'stock_status' => 'instock',
-				'rating_count' => 0,
-				'average_rating' => 0.00,
-				'total_sales' => 0,	
-			)
-		);
+	public static function importopencardfeed_product() {
+		$xml = new Importopencardfeed_Xml();
+		var_dump($xml->load_product_xml());
 	}
 	/**
 	 * Register all of the hooks related to the admin area functionality
@@ -206,20 +184,6 @@ class Importopencardfeed {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		// if (isset($post["run"])) {
-		// 	wp_schedule_single_event( time() + 60, 'query_import_hook' );
-		// 	if (!wp_next_scheduled( 'query_import_hook' ) ) {
-		// 		error_log( 'send_test_email_in_background:START' );
-		// 		wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
-		// 		error_log( 'send_test_email_in_background:END' );
-		// 	} else {
-		// 		wp_schedule_event ( time(), $post["crontime"], 'query_import_hook');
-		// 	}
-		// } else {
-		// 	wp_unschedule_event( wp_next_scheduled( 'query_import_hook' ), 'query_import_hook' );
-		// }
-
-		// add_action( 'query_import_hook', 'query_import' );
 	}
 
 	/**
@@ -245,7 +209,6 @@ class Importopencardfeed {
 	 */
 	public function run() {
 		$this->loader->run();
-		$this->init();
 		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			$this->postProcess($_POST);
 		}
@@ -253,10 +216,13 @@ class Importopencardfeed {
 
 	public function postProcess($post) {
 		if (isset($post['action']) && $post['action'] == 'importopencardfeed') {
+			$this->set_import($post);
+		}
+		if (isset($post['action']) && $post['action'] == 'importopencardstart') {
 			$this->run_import($post);
 		}
 	}
-	public function run_import($post) {
+	public function set_import($post) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'importopencardfeed_settings';
 		if(isset($post["run"])) {
@@ -276,6 +242,10 @@ class Importopencardfeed {
 			array( '%s', '%d', '%s'),
 			array( '%d' )
 		);
+		$this->create_cron_jobs();
+	}
+	public function run_import($post) {
+		do_action('importopencardfeed_hook');
 	}
 
 	/**

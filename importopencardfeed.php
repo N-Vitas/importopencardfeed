@@ -78,14 +78,5 @@ function run_importopencardfeed() {
 	$plugin->run();
 
 }
-function true_moi_interval( $raspisanie ) {
-	// $raspisanie - это массив, состоящий из всех зарегистрированных интервалов
-	// наша задача - добавить в него свой собственный интервал, к примеру пусть будет 3 минуты
-	$raspisanie['every_10_sec'] = array(
-		'interval' => 10, // в одной минуте 60 секунд, в трёх минутах - 180
-		'display' => 'Каждые 10 секунд' // отображаемое имя
-	);
-	return $raspisanie;
-}
 
 add_action('init', 'run_importopencardfeed');

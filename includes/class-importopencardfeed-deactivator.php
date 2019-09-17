@@ -35,6 +35,7 @@ class Importopencardfeed_Deactivator {
 	public static function uninstall_importopencardfeed() {
 		require_once plugin_dir_path( __FILE__ ) . 'class-importopencardfeed-install.php';
 		Importopencardfeed_Install::drop_tables();
+		wp_clear_scheduled_hook('importopencardfeed_hook');
 	}
 
 }

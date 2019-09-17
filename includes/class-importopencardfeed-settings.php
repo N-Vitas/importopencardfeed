@@ -38,20 +38,24 @@ class Importopencardfeed_Settings {
 			array( 
 				'id'      => 1,
 				"name" => "Настройки синхронизации", 
-				"crontime" => "every_10_sec", 
+				"crontime" => "hourly", 
 				"run" => 0, 
-				"url" => "http://localhost/", 
+				"url" => "https://baumarkt.kz/index.php?route=extension/feed/yandex_market", 
 			) 
 		);
     }
 
     public static function is_run() {
 		$settings = self::get_settings();
-        return $settings->run;
+        return $settings->run ? true : false;
     }
     public static function get_cron_time() {
 		$settings = self::get_settings();
         return $settings->crontime;
+    }
+    public static function get_feed_url() {
+		$settings = self::get_settings();
+        return $settings->url;
     }
     private static function get_settings() {
 		global $wpdb;

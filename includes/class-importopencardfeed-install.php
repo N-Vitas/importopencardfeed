@@ -46,7 +46,7 @@ class Importopencardfeed_Install {
 		) $collate;
 		CREATE TABLE {$wpdb->prefix}importopencardfeed_products (	
 			`id` mediumint(9) NOT NULL AUTO_INCREMENT,
-			`sku` varchar(100) NULL default '',
+			`sku` varchar(100) NOT NULL default '',
 			`virtual` tinyint(1) NULL default 0,
 			`downloadable` tinyint(1) NULL default 0,
 			`min_price` decimal(10,2) NULL default NULL,
