@@ -73,13 +73,12 @@ class Importopencardfeed {
 			$this->version = '1.0.0';
 		}
 		$this->plugin_name = 'importopencardfeed';
-
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 		$this->init();
-
+		Wc_Json_Api::instance();
 	}
 	public function init() {
 		add_filter( 'cron_schedules', array( __CLASS__, 'create_time_jobs' ) );
@@ -127,6 +126,10 @@ class Importopencardfeed {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-importopencardfeed-admin.php';
+		/**
+		 * The class REST-API this plugin.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wc-json-api.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing

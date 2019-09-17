@@ -35,19 +35,51 @@
 		var stock = $('#_stock');
 		var manage_stock = $('#_manage_stock');
 		input.change(function (){
-			if ($(this).val() == 'aaaaaa') {
-				regular_price.val(25000).attr({'disabled': true});
-				sale_price.val(23000).attr({'disabled': true});
-				stock.val(100).attr({'disabled': true});
-				manage_stock.attr({'checked': true}).attr({'disabled': true});
-			} else {
-				regular_price.attr({'disabled': false});
-				sale_price.attr({'disabled': false});
-				stock.attr({'disabled': false});
-				manage_stock.attr({'disabled': false});
-			}
+			$.ajax({
+				url: `${WPURLS.siteurl}/wp-json/importopencardfeed/v1/find/${$(this).val()}`,
+				type: 'GET',
+				beforeSend: function() {
+					loading();	
+				},
+				success: function( data ) {
+					stop();
+					regular_price.val(data.max_price).attr({'disabled': true});
+					sale_price.val(data.min_price).attr({'disabled': true});
+					stock.val(1).attr({'disabled': true});
+					manage_stock.attr({'checked': true}).attr({'disabled': true});
+				},
+				error: function() { 
+					stop();
+					regular_price.attr({'disabled': false});
+					sale_price.attr({'disabled': false});
+					stock.attr({'disabled': false});
+					manage_stock.attr({'disabled': false});
+                }
+			});
 		});
-	
+		function loading() {
+			if(!$("#loading")) {
+				$("body").append(`
+					<div id="loading" style="
+						position: fixed;
+						top: 0;
+						right: 0;
+						bottom: 0;
+						left: 0;
+						background: rgba(0,0,0,0.5);
+						z-index: 9999;
+						display: block;
+					">
+					</div>
+				`);
+			}
+        }
+		function stop() {
+			if(!$("#loading")) {
+				return;
+			}
+			$("#loading").css("display","none");
+        }
 		
 	});
 })( jQuery );
