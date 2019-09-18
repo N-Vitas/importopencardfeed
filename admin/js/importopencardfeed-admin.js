@@ -1,62 +1,81 @@
 (function( $ ) {
 	'use strict';
-
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
-	$( window ).load(function() {
-		var input = $('#_sku');
-		var regular_price = $('#_regular_price');
-		var sale_price = $('#_sale_price');
-		var stock = $('#_stock');
-		var manage_stock = $('#_manage_stock');
-		input.change(function (){
-			$.ajax({
-				url: `${WPURLS.siteurl}/wp-json/importopencardfeed/v1/find/${$(this).val()}`,
-				type: 'GET',
-				beforeSend: function() {
-					loading();	
-				},
-				success: function( data ) {
-					stop();
-					regular_price.val(data.max_price).attr({'disabled': true});
-					sale_price.val(data.min_price).attr({'disabled': true});
-					stock.val(1).attr({'disabled': true});
-					manage_stock.attr({'checked': true}).attr({'disabled': true});
-				},
-				error: function() { 
-					stop();
-					regular_price.attr({'disabled': false});
-					sale_price.attr({'disabled': false});
-					stock.attr({'disabled': false});
-					manage_stock.attr({'disabled': false});
-                }
-			});
+    $.fn.importReplacePlugin = function(input, regular_price, sale_price, stock, manage_stock) {
+		if(typeof input === "string" && input.length == 0) {
+			throw new Error('Input required parameter!');
+		}
+		if(typeof regular_price === "string" && regular_price.length == 0) {
+			throw new Error('RegularPrice required parameter!');
+		}
+		if(typeof sale_price === "string" && sale_price.length == 0) {
+			throw new Error('SalePrice required parameter!');
+		}
+		if(typeof stock === "string" && stock.length == 0) {
+			throw new Error('Stock required parameter!');
+		}
+		if(typeof manage_stock === "string" && manage_stock.length == 0) {
+			throw new Error('ManageStock required parameter!');
+		}
+		return this.each(function(i,form){
+			var $this = $(form);
+			var success = function(data) {
+				var val = $this.input.val();
+				var sale_price = $this.sale_price.val();
+				console.log(val, data.sku, sale_price);
+				if(val != data.sku) {
+					clear();
+					return $this;
+				}
+				$this.regular_price.val(data.max_price);//.attr({'disabled': true});
+				$this.sale_price.val(data.min_price-1);//.attr({'disabled': true});
+				save();
+				// $this.stock.val(1).attr({'disabled': true});
+				// $this.manage_stock.attr({'checked': true}).attr({'disabled': true});
+				// $.apply($this);
+			}
+			var clear = function() {
+				console.log($this.input.val());
+				// $this.regular_price.attr({'disabled': false});
+				// $this.sale_price.attr({'disabled': false});
+				// $this.stock.attr({'disabled': false});
+				// $this.manage_stock.attr({'disabled': false});
+			}
+			$(this).change(function(event) {
+				if(input.indexOf('#') != -1) {
+					console.log(event.currentTarget)
+					$this.input = $(input);
+					$this.regular_price = $(regular_price);
+					$this.sale_price = $(sale_price);
+					$this.stock = $(stock);
+					$this.manage_stock = $(manage_stock);
+				} else {
+					$this.input = $(this).find(`input[name=${input}]`);
+					$this.regular_price = $(this).find(`input[name=${regular_price}]`);
+					$this.sale_price = $(this).find(`input[name=${sale_price}]`);
+					$this.stock = $(this).find(`input[name=${stock}]`);
+					$this.manage_stock = $(this).find(`input[name=${manage_stock}]`);
+				}
+				$.ajax({
+					url: `${WPURLS.siteurl}/wp-json/importopencardfeed/v1/find/${$this.input.val()}`,
+					type: 'GET',
+					beforeSend: function() {
+						// loading();	
+					},
+					success: function(data) {success(data)},
+					error: function() {clear()},
+				});
+			})
 		});
+	}
+	$( window ).load(function() {
+		if(location.search.indexOf('edit') != -1){
+			$('form').importReplacePlugin('#_sku','#_regular_price','#_sale_price','#_stock','#_manage_stock').trigger('change');
+		}
+		if(location.search.indexOf('product') != -1){
+
+			$('#posts-filter').importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
+		}
+		// $('form[method=get]').importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
 		function loading() {
 			if(!$("#loading")) {
 				$("body").append(`
@@ -83,3 +102,14 @@
 		
 	});
 })( jQuery );
+
+class ImportReplacePlugin {
+    constructor(params) {
+		this.params = params;
+		input
+		regular_price
+		sale_price
+		stock
+		manage_stock
+    }
+}

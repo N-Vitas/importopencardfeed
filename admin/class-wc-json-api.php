@@ -22,6 +22,7 @@
  */
 class Wc_Json_Api {
     public function __construct() {
+        // return self::get_product_by_sku($_GET);
     }
 
     public static function instance() {
