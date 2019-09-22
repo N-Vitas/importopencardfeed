@@ -16,8 +16,8 @@
 		if(typeof manage_stock === "string" && manage_stock.length == 0) {
 			throw new Error('ManageStock required parameter!');
 		}
-		return this.each(function(i,form){
-			var $this = $(form);
+		return this.each(function(){
+			var $this = $(this);
 			var success = function(data) {
 				var val = $this.input.val();
 				var sale_price = $this.sale_price.val();
@@ -28,7 +28,6 @@
 				}
 				$this.regular_price.val(data.max_price);//.attr({'disabled': true});
 				$this.sale_price.val(data.min_price-1);//.attr({'disabled': true});
-				save();
 				// $this.stock.val(1).attr({'disabled': true});
 				// $this.manage_stock.attr({'checked': true}).attr({'disabled': true});
 				// $.apply($this);
@@ -40,9 +39,11 @@
 				// $this.stock.attr({'disabled': false});
 				// $this.manage_stock.attr({'disabled': false});
 			}
-			$(this).change(function(event) {
+			var query = function() {
+
+			}
+			$(this).change(function() {
 				if(input.indexOf('#') != -1) {
-					console.log(event.currentTarget)
 					$this.input = $(input);
 					$this.regular_price = $(regular_price);
 					$this.sale_price = $(sale_price);
@@ -68,13 +69,17 @@
 		});
 	}
 	$( window ).load(function() {
-		if(location.search.indexOf('edit') != -1){
-			$('form').importReplacePlugin('#_sku','#_regular_price','#_sale_price','#_stock','#_manage_stock').trigger('change');
-		}
-		if(location.search.indexOf('product') != -1){
+		
+		$('form').each(function(i,form){
+			$(form).importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
+		});
+		// if(location.search.indexOf('edit') != -1){
+		// 	$('form').importReplacePlugin('#_sku','#_regular_price','#_sale_price','#_stock','#_manage_stock').trigger('change');
+		// }
+		// if(location.search.indexOf('product') != -1){
 
-			$('#posts-filter').importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
-		}
+		// 	$('#posts-filter').importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
+		// }
 		// $('form[method=get]').importReplacePlugin('_sku','_regular_price','_sale_price','_stock','_manage_stock');
 		function loading() {
 			if(!$("#loading")) {
