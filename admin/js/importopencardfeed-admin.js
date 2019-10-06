@@ -20,14 +20,14 @@
 			var $this = $(this);
 			var success = function(data) {
 				var val = $this.input.val();
-				var sale_price = $this.sale_price.val();
-				console.log(val, data.sku, sale_price);
+				// var sale_price = $this.sale_price.val();
+				// console.log(val, data.sku, sale_price);
 				if(val != data.sku) {
 					clear();
 					return $this;
 				}
 				$this.regular_price.val(data.max_price);//.attr({'disabled': true});
-				$this.sale_price.val(data.min_price-1);//.attr({'disabled': true});
+				// $this.sale_price.val(data.min_price-1);//.attr({'disabled': true});
 				// $this.stock.val(1).attr({'disabled': true});
 				// $this.manage_stock.attr({'checked': true}).attr({'disabled': true});
 				// $.apply($this);
@@ -46,13 +46,13 @@
 				if(input.indexOf('#') != -1) {
 					$this.input = $(input);
 					$this.regular_price = $(regular_price);
-					$this.sale_price = $(sale_price);
+					// $this.sale_price = $(sale_price);
 					$this.stock = $(stock);
 					$this.manage_stock = $(manage_stock);
 				} else {
 					$this.input = $(this).find(`input[name=${input}]`);
 					$this.regular_price = $(this).find(`input[name=${regular_price}]`);
-					$this.sale_price = $(this).find(`input[name=${sale_price}]`);
+					// $this.sale_price = $(this).find(`input[name=${sale_price}]`);
 					$this.stock = $(this).find(`input[name=${stock}]`);
 					$this.manage_stock = $(this).find(`input[name=${manage_stock}]`);
 				}

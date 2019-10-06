@@ -172,7 +172,7 @@ class Importopencardfeed {
 	
 	public static function importopencardfeed_product() {
 		$xml = new Importopencardfeed_Xml();
-		var_dump($xml->load_product_xml());
+		$xml->load_product_xml();
 	}
 	/**
 	 * Register all of the hooks related to the admin area functionality

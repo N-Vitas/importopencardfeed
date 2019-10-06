@@ -170,7 +170,7 @@ class Importopencardfeed_Xml {
         if($product_id) {
             $product = wc_get_product($product_id);
             $product->set_regular_price($price);
-            $product->set_sale_price($price);
+            // $product->set_sale_price($price);
             $product->set_stock_status($delivery ? 'instock' : 'outofstock');
             $product->save();
         }
